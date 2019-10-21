@@ -57,18 +57,13 @@ public class OpenGLActivity extends AppCompatActivity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_open_gl);
         // do we have a camera?
-
         textureView = findViewById(R.id.texture_view);
-
         DefaultCameraRenderer defaultCameraRenderer = new DefaultCameraRenderer(this);
-
         textureViewGLWrapper = new TextureViewGLWrapper(defaultCameraRenderer);
         textureViewGLWrapper.setListener(new TextureViewGLWrapper.EGLSurfaceTextureListener() {
             @Override
             public void onSurfaceTextureReady(SurfaceTexture surfaceTxt) {
-
                 surfaceTexture = surfaceTxt;
-
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
                         try {
@@ -76,7 +71,6 @@ public class OpenGLActivity extends AppCompatActivity {
                         } catch (CameraAccessException e) {
                             e.printStackTrace();
                         }
-
                     }
                 }
             }
@@ -116,6 +110,13 @@ public class OpenGLActivity extends AppCompatActivity {
     private void getCameraPermission() {
         if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.CAMERA}, MY_CAMERA_REQUEST_CODE);
+        } else {
+            try {
+                canOpenCamera = true;
+                openCamera();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
     }
 
@@ -139,11 +140,8 @@ public class OpenGLActivity extends AppCompatActivity {
 
     void openCamera() throws CameraAccessException {
         if (!canOpenCamera) return;
-        if (!textureView.isAvailable()) return;
         if (surfaceTexture == null) return;
         if (cameraDevice != null) return;
-
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             cameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
             for (String cameraId : cameraManager.getCameraIdList()) {
@@ -168,9 +166,9 @@ public class OpenGLActivity extends AppCompatActivity {
 
                             cameraDevice = camera;
                             surface = new Surface(surfaceTexture);
-                            surfaceTexture.setDefaultBufferSize(textureView.getWidth(), textureView.getHeight());
+                            surfaceTexture.setDefaultBufferSize(1000, 1700);
                             try {
-                                final CaptureRequest.Builder builder =  camera.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+                                final CaptureRequest.Builder builder = camera.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
                                 List<Surface> surfaces = new ArrayList<Surface>();
                                 surfaces.add(surface);
                                 builder.addTarget(surface);
@@ -218,6 +216,13 @@ public class OpenGLActivity extends AppCompatActivity {
             camera.release();
             camera = null;
         }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            captureSession.close();
+            captureSession = null;
+            cameraDevice.close();
+        }
+        cameraDevice = null;
+        surfaceTexture = null;
         super.onPause();
     }
 
