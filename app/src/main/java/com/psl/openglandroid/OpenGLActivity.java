@@ -3,22 +3,26 @@ package com.psl.openglandroid;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
-import android.hardware.camera2.CameraCaptureSession.CaptureCallback;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.params.RecommendedStreamConfigurationMap;
+import android.hardware.camera2.params.StreamConfigurationMap;
 import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
+import android.util.Size;
 import android.view.Surface;
 import android.hardware.camera2.CameraManager;
 import android.os.Bundle;
@@ -30,6 +34,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class OpenGLActivity extends AppCompatActivity {
 
@@ -72,6 +77,8 @@ public class OpenGLActivity extends AppCompatActivity {
                             e.printStackTrace();
                         }
                     }
+                } else {
+                    requestingCamera();
                 }
             }
         }, new Handler(Looper.getMainLooper()));
@@ -106,18 +113,30 @@ public class OpenGLActivity extends AppCompatActivity {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
-    private void getCameraPermission() {
-        if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.CAMERA}, MY_CAMERA_REQUEST_CODE);
-        } else {
-            try {
-                canOpenCamera = true;
-                openCamera();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
+
+    void requestingCamera(){
+        try {
+            canOpenCamera = true;
+            openCamera();
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
+    }
+
+    private void getCameraPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            if(ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED){
+                requestingCamera();
+            }
+            else if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.CAMERA}, MY_CAMERA_REQUEST_CODE);
+            } else {
+                requestingCamera();
+            }
+        } else {
+            requestingCamera();
+        }
+
     }
 
     @Override
@@ -145,7 +164,7 @@ public class OpenGLActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             cameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
             for (String cameraId : cameraManager.getCameraIdList()) {
-                CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(cameraId);
+                final CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(cameraId);
                 if (characteristics.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
@@ -166,7 +185,14 @@ public class OpenGLActivity extends AppCompatActivity {
 
                             cameraDevice = camera;
                             surface = new Surface(surfaceTexture);
-                            surfaceTexture.setDefaultBufferSize(1000, 1700);
+                            StreamConfigurationMap streamConfigurationMap = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+
+
+                            Size[] sizes = streamConfigurationMap.getOutputSizes(ImageFormat.JPEG);
+                            if(sizes != null){
+                                Size size = sizes[0];
+                                surfaceTexture.setDefaultBufferSize(size.getWidth(), size.getWidth());
+                            }
                             try {
                                 final CaptureRequest.Builder builder = camera.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
                                 List<Surface> surfaces = new ArrayList<Surface>();
@@ -178,6 +204,7 @@ public class OpenGLActivity extends AppCompatActivity {
                                         builder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
                                         builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
                                         builder.set(CaptureRequest.CONTROL_AE_ANTIBANDING_MODE, CaptureRequest.CONTROL_AE_ANTIBANDING_MODE_AUTO);
+                                        captureSession = session;
                                         try {
                                             session.setRepeatingRequest(builder.build(), null, null);
                                         } catch (Exception e) {
