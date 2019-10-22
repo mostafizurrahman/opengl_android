@@ -49,8 +49,8 @@ public class DefaultCameraRenderer implements TextureViewGLWrapper.GLRenderer {
 //      float ratio = (float) surfaceWidth / surfaceHeight;
 
 
-        this.surfaceWidth = surfaceWidth;
-        this.surfaceHeight = surfaceHeight;
+        this.surfaceWidth = surfaceWidth - 40;
+        this.surfaceHeight = surfaceHeight - 40;
 
         //We are drawing two triangles for the texture
         short vertexOrder[] = {0, 1, 2, 1, 3, 2};
@@ -142,8 +142,8 @@ public class DefaultCameraRenderer implements TextureViewGLWrapper.GLRenderer {
         GLES20.glUseProgram(program);
 
         //Make the texture available to the shader
-        GLES20.glViewport(0, originY, this.surfaceWidth, this.surfaceHeight);
-        GLES20.glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
+        GLES20.glViewport(20, originY, this.surfaceWidth, this.surfaceHeight);
+        GLES20.glClearColor(0.40f, 0.40f, 0.40f, 1.0f);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
         //Update texture
@@ -154,7 +154,7 @@ public class DefaultCameraRenderer implements TextureViewGLWrapper.GLRenderer {
         eglSurfaceTexture.getTransformMatrix(cameraTextureMatrix.getArray());
         GLES20.glUniformMatrix4fv(camTexMatrixHandle, 1, false, cameraTextureMatrix.getArray(), 0);
 
-        GLES20.glUniform1i(imageTypeHandler, 0);
+        GLES20.glUniform1i(imageTypeHandler, 1);
         GLES20.glUniform1f(imageWHRatioHandler, imageRatio);
 
         //Send position

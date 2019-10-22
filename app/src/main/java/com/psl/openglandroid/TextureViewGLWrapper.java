@@ -2,6 +2,7 @@ package com.psl.openglandroid;
 
 
 import android.graphics.SurfaceTexture;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.TextureView;
@@ -92,7 +93,9 @@ public class TextureViewGLWrapper
       //Configure the display
       eglSurfaceTexture = eglHelper.createSurface(surfaceTexture, false);
       renderer.onSurfaceCreated(eglSurfaceTexture, surfaceWidth, surfaceHeight);
-      eglSurfaceTexture.setOnFrameAvailableListener(this, renderThread.handler);
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+         eglSurfaceTexture.setOnFrameAvailableListener(this, renderThread.handler);
+      }
       //At this point we should be ready to accept frames from the camera
       listenerHandler.post(new Runnable() {
          @Override public void run() {
