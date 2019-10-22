@@ -9,12 +9,14 @@ import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.ImageFormat;
+import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
+import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.params.RecommendedStreamConfigurationMap;
 import android.hardware.camera2.params.StreamConfigurationMap;
@@ -63,7 +65,11 @@ public class OpenGLActivity extends AppCompatActivity {
         setContentView(R.layout.activity_open_gl);
         // do we have a camera?
         textureView = findViewById(R.id.texture_view);
-        DefaultCameraRenderer defaultCameraRenderer = new DefaultCameraRenderer(this);
+        int _width = textureView.getWidth();
+        int _height = textureView.getHeight();
+
+
+        DefaultCameraRenderer defaultCameraRenderer = new DefaultCameraRenderer(this, _width, _height);
         textureViewGLWrapper = new TextureViewGLWrapper(defaultCameraRenderer);
         textureViewGLWrapper.setListener(new TextureViewGLWrapper.EGLSurfaceTextureListener() {
             @Override
@@ -191,7 +197,7 @@ public class OpenGLActivity extends AppCompatActivity {
                             Size[] sizes = streamConfigurationMap.getOutputSizes(ImageFormat.JPEG);
                             if(sizes != null){
                                 Size size = sizes[0];
-                                surfaceTexture.setDefaultBufferSize(size.getWidth(), size.getWidth());
+                                surfaceTexture.setDefaultBufferSize(size.getWidth(), size.getHeight());
                             }
                             try {
                                 final CaptureRequest.Builder builder = camera.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
@@ -203,8 +209,12 @@ public class OpenGLActivity extends AppCompatActivity {
                                     public void onConfigured(@NonNull CameraCaptureSession session) {
 
 
-                                        builder.set(CaptureRequest.CONTROL_AE_LOCK, true);
-                                        builder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+//                                        builder.set(CaptureRequest.CONTROL_AE_LOCK, true);
+                                        if(Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP ||
+                                                Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP_MR1){
+                                            builder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
+                                        }
+                                        builder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_AUTO);
                                         builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
                                         builder.set(CaptureRequest.CONTROL_AE_ANTIBANDING_MODE, CaptureRequest.CONTROL_AE_ANTIBANDING_MODE_AUTO);
                                         captureSession = session;
@@ -247,9 +257,14 @@ public class OpenGLActivity extends AppCompatActivity {
             camera = null;
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            captureSession.close();
-            captureSession = null;
-            cameraDevice.close();
+            if(captureSession != null){
+                captureSession.close();
+                captureSession = null;
+            }
+            if(cameraDevice != null){
+
+                cameraDevice.close();
+            }
         }
         cameraDevice = null;
         surfaceTexture = null;

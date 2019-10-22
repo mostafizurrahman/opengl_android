@@ -33,12 +33,19 @@ public class DefaultCameraRenderer implements TextureViewGLWrapper.GLRenderer {
    private int surfaceWidth;
    private int surfaceHeight;
 
-   public DefaultCameraRenderer(Context context) {
+   private int viewWidth, viewHeight;
+   public DefaultCameraRenderer(Context context, int _width, int _height) {
+      this.viewHeight = _height;
+      this.viewWidth = _width;
       this.context = context;
    }
 
    @Override
    public void onSurfaceCreated(SurfaceTexture eglSurfaceTexture, int surfaceWidth, int surfaceHeight) {
+
+//      float ratio = (float) surfaceWidth / surfaceHeight;
+
+
       this.surfaceWidth = surfaceWidth;
       this.surfaceHeight = surfaceHeight;
 
@@ -94,8 +101,8 @@ public class DefaultCameraRenderer implements TextureViewGLWrapper.GLRenderer {
 
    @Override
    public void onSurfaceChanged(SurfaceTexture eglSurfaceTexture, int surfaceWidth, int surfaceHeight) {
-      this.surfaceWidth = surfaceWidth;
-      this.surfaceHeight = surfaceHeight;
+//      this.surfaceWidth = 500;
+//      this.surfaceHeight = 888;
    }
 
    @Override public void onFrameAvailable(SurfaceTexture eglSurfaceTexture) {
@@ -103,8 +110,8 @@ public class DefaultCameraRenderer implements TextureViewGLWrapper.GLRenderer {
       GLES20.glUseProgram(program);
 
       //Make the texture available to the shader
-      GLES20.glViewport(0, 0, surfaceWidth, surfaceHeight);
-      GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+      GLES20.glViewport(0, 0, this.surfaceWidth, this.surfaceHeight);
+      GLES20.glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
       GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
       //Update texture
