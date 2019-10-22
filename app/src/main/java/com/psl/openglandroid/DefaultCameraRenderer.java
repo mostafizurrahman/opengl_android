@@ -110,6 +110,7 @@ public class DefaultCameraRenderer implements TextureViewGLWrapper.GLRenderer {
         int _height = (int) (this.surfaceWidth * imageRatio) - bottomHeight;
         originY = (int) ((this.surfaceHeight - _height) / 2.0);
         this.surfaceHeight = _height;
+        imageRatio = (float) imageWidth / (imageHeight + bottomHeight);
     }
 
     private int getSoftButtonsBarHeight() {
