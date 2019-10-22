@@ -5,6 +5,7 @@ precision mediump float;
 
 uniform float imageWHRatio;
 uniform int imageType;
+uniform int captureImage;
 uniform samplerExternalOES camTex;
 varying vec2 camTexCoordinate;
 
@@ -36,7 +37,7 @@ void main () {
         vec2 coord = modCord - vec2(0.5 * imageWHRatio, 0.5);//from [0,1] to [-0.5,0.5]
         if (length(coord) > 0.45)//outside of circle radius?
         discard;
-        else if (length(coord) <= 0.45 && length(coord) > 0.4475) {
+        else if (length(coord) <= 0.45 && length(coord) > 0.4475 && captureImage == 0 ) {
             gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
         } else {
             gl_FragColor = color;
@@ -58,8 +59,12 @@ void main () {
         !(camTexCoordinate.y < 0.005 || camTexCoordinate.y > 0.995 )){
             gl_FragColor = color;
         } else if ( shouldSKip(camTexCoordinate.y) == 0 && shouldSKip(camTexCoordinate.x) == 0 ){
-            gl_FragColor =  vec4(1.0, 0.0, 0.0, 1.0);
-        } else {
+            if(captureImage == 0){
+                gl_FragColor =  vec4(1.0, 0.0, 0.0, 1.0);
+            } else {
+                gl_FragColor = color;
+            }
+        }  else {
             gl_FragColor = color;
         }
 

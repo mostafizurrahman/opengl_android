@@ -13,6 +13,11 @@
         tools:context="com.psl.openglandroid.OpenGLActivity">
 
     </TextureView>
+    <ImageView android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        android:id="@+id/previewImage">
+
+    </ImageView>
     <LinearLayout
         android:gravity="center"
         android:layout_width="match_parent"
@@ -31,7 +36,15 @@
         <Button android:id="@+id/captureImageButton"
             android:layout_height="50dp"
             android:text="Capture Image"
+            android:padding="8dp"
             android:layout_width="175dp">
+        </Button>
+        <Button
+        android:padding="8dp"
+            android:layout_width="75dp"
+            android:layout_height="50dp"
+            android:id="@+id/clearImageButton"
+            android:text="Clear">
         </Button>
     </LinearLayout>
 </FrameLayout>

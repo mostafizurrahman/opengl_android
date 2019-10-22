@@ -1,6 +1,7 @@
 package com.psl.openglandroid;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
 import android.os.Build;
@@ -29,7 +30,7 @@ public class DefaultCameraRenderer implements TextureViewGLWrapper.GLRenderer {
     private int imageWHRatioHandler = 0;
     private int camTexMatrixHandle;
     private int mvpMatrixHandle;
-
+private int captureImageHandler;
     private int imageType = 1;
     float imageRatio;
     private Matrix4f cameraTextureMatrix = new Matrix4f();
@@ -40,11 +41,24 @@ public class DefaultCameraRenderer implements TextureViewGLWrapper.GLRenderer {
 
     private int originY = 0;
 
-    public DefaultCameraRenderer(Context context) {
-        this.context = context;
+
+    private boolean shouldCaptureImage = false;
+
+    ImageCaptureInterface imageCaptureInterface;
+
+    boolean captureImage(){
+        if(shouldCaptureImage) return false;
+        this.shouldCaptureImage = true;
+        return true;
     }
 
-    public void changeImageType(boolean isProfilePicture){
+
+    DefaultCameraRenderer(Context context) {
+        this.context = context;
+        this.imageCaptureInterface = (ImageCaptureInterface) context;
+    }
+
+    void changeImageType(boolean isProfilePicture){
         this.imageType = isProfilePicture ? 0 : 1;
     }
     @Override
@@ -102,6 +116,7 @@ public class DefaultCameraRenderer implements TextureViewGLWrapper.GLRenderer {
         camTexMatrixHandle = GLES20.glGetUniformLocation(program, "camTexMatrix");
         mvpMatrixHandle = GLES20.glGetUniformLocation(program, "mvpMatrix");
         imageTypeHandler = GLES20.glGetUniformLocation(program, "imageType");
+        captureImageHandler = GLES20.glGetUniformLocation(program, "captureImage");
         imageWHRatioHandler = GLES20.glGetUniformLocation(program, "imageWHRatio");
         positionHandle = GLES20.glGetAttribLocation(program, "position");
         texturePositionHandle = GLES20.glGetAttribLocation(program, "texturePosition");
@@ -160,6 +175,7 @@ public class DefaultCameraRenderer implements TextureViewGLWrapper.GLRenderer {
 
         GLES20.glUniform1i(imageTypeHandler, imageType);
         GLES20.glUniform1f(imageWHRatioHandler, imageRatio);
+        GLES20.glUniform1i(captureImageHandler, this.shouldCaptureImage ? 1 : 0);
 
         //Send position
         GLES20.glEnableVertexAttribArray(positionHandle);
@@ -173,6 +189,11 @@ public class DefaultCameraRenderer implements TextureViewGLWrapper.GLRenderer {
         GLES20.glUniformMatrix4fv(mvpMatrixHandle, 1, false, mvpMatrix.getArray(), 0);
         //And draw
         GLES20.glDrawElements(GLES20.GL_TRIANGLES, drawOrderBuffer.remaining(), GLES20.GL_UNSIGNED_SHORT, drawOrderBuffer);
+        if(this.shouldCaptureImage){
+            Bitmap bitmap = OpenGLTools.saveTexture( this.surfaceWidth, this.surfaceWidth);
+            this.imageCaptureInterface.onImageCapture(bitmap);
+            this.shouldCaptureImage = false;
+        }
     }
 
     @Override

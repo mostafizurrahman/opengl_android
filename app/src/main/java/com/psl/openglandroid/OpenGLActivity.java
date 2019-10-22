@@ -8,6 +8,7 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
@@ -29,15 +30,18 @@ import android.hardware.camera2.CameraManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.TextureView;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OpenGLActivity extends AppCompatActivity {
+public class OpenGLActivity extends AppCompatActivity implements  ImageCaptureInterface{
 
     private final static String DEBUG_TAG = "MakePhotoActivity";
     private static final int MY_CAMERA_REQUEST_CODE = 100;
@@ -55,6 +59,7 @@ public class OpenGLActivity extends AppCompatActivity {
     private TextureViewGLWrapper textureViewGLWrapper;
     private Handler backgroundHandler;
 
+    ImageView preview;
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +69,27 @@ public class OpenGLActivity extends AppCompatActivity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_open_gl);
         // do we have a camera?
+        preview = findViewById(R.id.previewImage);
+        preview.setVisibility(View.GONE);
+        Button clearButton = findViewById(R.id.clearImageButton);
+        clearButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                preview.setImageDrawable(null);
+                preview.setVisibility(View.GONE);
+            }
+        });
+        Button captureButton = findViewById(R.id.captureImageButton);
+        final Context context = this;
+        captureButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+               if(!defaultCameraRenderer.captureImage()) {
+                   Toast.makeText(context, "Please wait...",
+                           Toast.LENGTH_LONG).show();
+               }
+            }
+        });
         Switch _switch = findViewById(R.id.imageChangerSwitch);
 
         textureView = findViewById(R.id.texture_view);
@@ -287,4 +313,14 @@ public class OpenGLActivity extends AppCompatActivity {
         super.onPause();
     }
 
+    @Override
+    public void onImageCapture(final Bitmap bitmap) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                preview.setVisibility(View.VISIBLE);
+                preview.setImageBitmap(bitmap);
+            }
+        });
+    }
 }
