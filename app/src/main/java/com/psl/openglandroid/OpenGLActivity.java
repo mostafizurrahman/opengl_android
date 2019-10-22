@@ -43,6 +43,7 @@ public class OpenGLActivity extends AppCompatActivity {
     private final static String DEBUG_TAG = "MakePhotoActivity";
     private static final int MY_CAMERA_REQUEST_CODE = 100;
     boolean canOpenCamera = false;
+    DefaultCameraRenderer defaultCameraRenderer;
     private Camera camera;
     private int cameraId = 0;
     private CameraManager cameraManager;
@@ -65,11 +66,9 @@ public class OpenGLActivity extends AppCompatActivity {
         setContentView(R.layout.activity_open_gl);
         // do we have a camera?
         textureView = findViewById(R.id.texture_view);
-        int _width = textureView.getWidth();
-        int _height = textureView.getHeight();
 
 
-        DefaultCameraRenderer defaultCameraRenderer = new DefaultCameraRenderer(this, _width, _height);
+        defaultCameraRenderer = new DefaultCameraRenderer(this);
         textureViewGLWrapper = new TextureViewGLWrapper(defaultCameraRenderer);
         textureViewGLWrapper.setListener(new TextureViewGLWrapper.EGLSurfaceTextureListener() {
             @Override
@@ -195,9 +194,12 @@ public class OpenGLActivity extends AppCompatActivity {
 
 
                             Size[] sizes = streamConfigurationMap.getOutputSizes(ImageFormat.JPEG);
-                            if(sizes != null){
-                                Size size = sizes[0];
-                                surfaceTexture.setDefaultBufferSize(size.getWidth(), size.getHeight());
+                            for(Size size : sizes){
+                                if(size.getWidth() <= 3000 && size.getWidth() >= 1080){
+                                    surfaceTexture.setDefaultBufferSize(size.getWidth(), size.getHeight());
+                                    defaultCameraRenderer.updateViewPort(size.getWidth(), size.getHeight());
+                                    break;
+                                }
                             }
                             try {
                                 final CaptureRequest.Builder builder = camera.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
@@ -209,14 +211,22 @@ public class OpenGLActivity extends AppCompatActivity {
                                     public void onConfigured(@NonNull CameraCaptureSession session) {
 
 
-//                                        builder.set(CaptureRequest.CONTROL_AE_LOCK, true);
+//                                        builder.set(CaptureRequest.CONTROL_AF_MODE,  CameraMetadata.CONTROL_AF_MODE_OFF);
                                         if(Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP ||
                                                 Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP_MR1){
-                                            builder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
+
                                         }
-                                        builder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_AUTO);
-                                        builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
-                                        builder.set(CaptureRequest.CONTROL_AE_ANTIBANDING_MODE, CaptureRequest.CONTROL_AE_ANTIBANDING_MODE_AUTO);
+                                        builder.set(CaptureRequest.CONTROL_AF_MODE,
+                                                CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+//                                        builder.set(CaptureRequest.EDGE_MODE, CameraMetadata.EDGE_MODE_HIGH_QUALITY);
+//                                        builder.set(CaptureRequest.SHADING_MODE, CameraMetadata.SHADING_MODE_HIGH_QUALITY);
+//                                        builder.set(CaptureRequest.TONEMAP_MODE, CameraMetadata.TONEMAP_MODE_HIGH_QUALITY);
+//                                        builder.set(CaptureRequest.COLOR_CORRECTION_ABERRATION_MODE, CameraMetadata.COLOR_CORRECTION_ABERRATION_MODE_HIGH_QUALITY);
+//                                        builder.set(CaptureRequest.COLOR_CORRECTION_MODE, CameraMetadata.COLOR_CORRECTION_ABERRATION_MODE_HIGH_QUALITY);
+//                                        builder.set(CaptureRequest.HOT_PIXEL_MODE, CameraMetadata.HOT_PIXEL_MODE_HIGH_QUALITY);
+//                                        builder.set(CaptureRequest.NOISE_REDUCTION_MODE, CameraMetadata.NOISE_REDUCTION_MODE_HIGH_QUALITY);
+//                                        builder.set(CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE, CameraMetadata.LENS_OPTICAL_STABILIZATION_MODE_ON);
+//                                        builder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
                                         captureSession = session;
                                         try {
                                             session.setRepeatingRequest(builder.build(), null, null);
