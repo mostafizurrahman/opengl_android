@@ -18,7 +18,6 @@ import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
-import android.hardware.camera2.params.RecommendedStreamConfigurationMap;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.os.Build;
 import android.os.Handler;
@@ -32,11 +31,11 @@ import android.util.Log;
 import android.view.TextureView;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.Toast;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class OpenGLActivity extends AppCompatActivity {
 
@@ -65,10 +64,17 @@ public class OpenGLActivity extends AppCompatActivity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_open_gl);
         // do we have a camera?
+        Switch _switch = findViewById(R.id.imageChangerSwitch);
+
         textureView = findViewById(R.id.texture_view);
 
 
         defaultCameraRenderer = new DefaultCameraRenderer(this);
+        _switch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                defaultCameraRenderer.changeImageType(isChecked);
+            }
+        });
         textureViewGLWrapper = new TextureViewGLWrapper(defaultCameraRenderer);
         textureViewGLWrapper.setListener(new TextureViewGLWrapper.EGLSurfaceTextureListener() {
             @Override

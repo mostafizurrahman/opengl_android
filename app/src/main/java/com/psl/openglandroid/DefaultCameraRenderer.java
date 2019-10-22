@@ -30,6 +30,7 @@ public class DefaultCameraRenderer implements TextureViewGLWrapper.GLRenderer {
     private int camTexMatrixHandle;
     private int mvpMatrixHandle;
 
+    private int imageType = 1;
     float imageRatio;
     private Matrix4f cameraTextureMatrix = new Matrix4f();
     private Matrix4f mvpMatrix = new Matrix4f();
@@ -43,6 +44,9 @@ public class DefaultCameraRenderer implements TextureViewGLWrapper.GLRenderer {
         this.context = context;
     }
 
+    public void changeImageType(boolean isProfilePicture){
+        this.imageType = isProfilePicture ? 0 : 1;
+    }
     @Override
     public void onSurfaceCreated(SurfaceTexture eglSurfaceTexture, int surfaceWidth, int surfaceHeight) {
 
@@ -69,25 +73,25 @@ public class DefaultCameraRenderer implements TextureViewGLWrapper.GLRenderer {
                 1.0f, 0.0f,
         };
 
-        ByteBuffer bb;
+        ByteBuffer bufferByte;
 
         // Draw list buffer
-        bb = ByteBuffer.allocateDirect(vertexOrder.length * 2); //2 bytes short
-        bb.order(ByteOrder.nativeOrder());
-        drawOrderBuffer = bb.asShortBuffer();
+        bufferByte = ByteBuffer.allocateDirect(vertexOrder.length * 2); //2 bytes short
+        bufferByte.order(ByteOrder.nativeOrder());
+        drawOrderBuffer = bufferByte.asShortBuffer();
         drawOrderBuffer.put(vertexOrder);
         drawOrderBuffer.position(0);
 
         // Initialize the texture holder
-        bb = ByteBuffer.allocateDirect(vertexCoordinates.length * 4); //4 bytes/float
-        bb.order(ByteOrder.nativeOrder());
-        positionBuffer = bb.asFloatBuffer();
+        bufferByte = ByteBuffer.allocateDirect(vertexCoordinates.length * 4); //4 bytes/float
+        bufferByte.order(ByteOrder.nativeOrder());
+        positionBuffer = bufferByte.asFloatBuffer();
         positionBuffer.put(vertexCoordinates);
         positionBuffer.position(0);
 
-        bb = ByteBuffer.allocateDirect(vertexTextureCoordinates.length * 4); //4 bytes/float
-        bb.order(ByteOrder.nativeOrder());
-        texturePositionBuffer = bb.asFloatBuffer();
+        bufferByte = ByteBuffer.allocateDirect(vertexTextureCoordinates.length * 4); //4 bytes/float
+        bufferByte.order(ByteOrder.nativeOrder());
+        texturePositionBuffer = bufferByte.asFloatBuffer();
         texturePositionBuffer.put(vertexTextureCoordinates);
         texturePositionBuffer.position(0);
 
@@ -154,7 +158,7 @@ public class DefaultCameraRenderer implements TextureViewGLWrapper.GLRenderer {
         eglSurfaceTexture.getTransformMatrix(cameraTextureMatrix.getArray());
         GLES20.glUniformMatrix4fv(camTexMatrixHandle, 1, false, cameraTextureMatrix.getArray(), 0);
 
-        GLES20.glUniform1i(imageTypeHandler, 1);
+        GLES20.glUniform1i(imageTypeHandler, imageType);
         GLES20.glUniform1f(imageWHRatioHandler, imageRatio);
 
         //Send position
