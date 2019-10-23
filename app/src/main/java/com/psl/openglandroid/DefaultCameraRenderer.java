@@ -190,7 +190,7 @@ private int captureImageHandler;
         //And draw
         GLES20.glDrawElements(GLES20.GL_TRIANGLES, drawOrderBuffer.remaining(), GLES20.GL_UNSIGNED_SHORT, drawOrderBuffer);
         if(this.shouldCaptureImage){
-            Bitmap bitmap = OpenGLTools.saveTexture( this.surfaceWidth, this.surfaceWidth);
+            Bitmap bitmap = OpenGLTools.saveTexture( this.surfaceWidth, this.surfaceWidth, 20, originY);
             this.imageCaptureInterface.onImageCapture(bitmap);
             this.shouldCaptureImage = false;
         }

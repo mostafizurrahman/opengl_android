@@ -66,14 +66,15 @@ public class OpenGLTools {
         return program;
     }
 
-    public static Bitmap saveTexture( int width, int height) {
+    public static Bitmap saveTexture( int width, int height, int originX, int originY) {
 //        int[] frame = new int[1];
 //        GLES20.glGenFramebuffers(1, frame, 0);
 //        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frame[0]);
 //        GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D, texture, 0);
 
         ByteBuffer buffer = ByteBuffer.allocate(width * height * 4);
-        GLES20.glReadPixels(0, 0, width, height, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, buffer);
+        GLES20.glReadPixels(originX, originY, width, height,
+                GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, buffer);
         Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         bitmap.copyPixelsFromBuffer(buffer);
 
