@@ -1,6 +1,7 @@
 package com.psl.openglandroid;
 
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.util.Log;
@@ -72,6 +73,8 @@ public class OpenGLTools {
 //        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frame[0]);
 //        GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D, texture, 0);
 
+        Matrix matrix = new Matrix();
+        matrix.postScale(1, -1, width/2, height/2);
         ByteBuffer buffer = ByteBuffer.allocate(width * height * 4);
         GLES20.glReadPixels(originX, originY, width, height,
                 GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, buffer);
@@ -81,6 +84,6 @@ public class OpenGLTools {
 //        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
 //        GLES20.glDeleteFramebuffers(1, frame, 0);
 
-        return bitmap;
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
     }
 }
