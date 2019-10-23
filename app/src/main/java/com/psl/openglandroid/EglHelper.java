@@ -44,13 +44,12 @@ class EglHelper {
 //            Timber.e("Failed to create EGL3 context");
             eglContext = EGL14.EGL_NO_CONTEXT;
          }
-      }
-
-      if (eglContext == EGL14.EGL_NO_CONTEXT) {
+      } else {
          eglContextAttributes[1] = 2; //Fall back to version 2
          eglConfig = createEGLConfig(2, isVideo);
          eglContext = EGL14.eglCreateContext(eglDisplay, eglConfig, EGL14.EGL_NO_CONTEXT, eglContextAttributes, 0);
       }
+
 
       // Confirm with query.
       int[] values = new int[1];
