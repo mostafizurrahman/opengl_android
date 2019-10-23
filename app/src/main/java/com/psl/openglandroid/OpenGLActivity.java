@@ -294,22 +294,22 @@ public class OpenGLActivity extends AppCompatActivity implements  ImageCaptureIn
 
     @Override
     protected void onPause() {
-        if (camera != null) {
-            camera.release();
-            camera = null;
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            if(captureSession != null){
-                captureSession.close();
-                captureSession = null;
-            }
-            if(cameraDevice != null){
-
-                cameraDevice.close();
-            }
-        }
-        cameraDevice = null;
-        surfaceTexture = null;
+//        if (camera != null) {
+//            camera.release();
+//            camera = null;
+//        }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//            if(captureSession != null){
+//                captureSession.close();
+//                captureSession = null;
+//            }
+//            if(cameraDevice != null){
+//
+//                cameraDevice.close();
+//            }
+//        }
+//        cameraDevice = null;
+//        surfaceTexture = null;
         super.onPause();
     }
 

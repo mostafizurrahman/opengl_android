@@ -18,11 +18,11 @@ import java.nio.ShortBuffer;
  */
 public class DefaultCameraRenderer implements TextureViewGLWrapper.GLRenderer {
     private final Context context;
-
+    float imageRatio;
+    ImageCaptureInterface imageCaptureInterface;
     private FloatBuffer positionBuffer;
     private FloatBuffer texturePositionBuffer;
     private ShortBuffer drawOrderBuffer;
-
     private int program = 0;
     private int positionHandle;
     private int texturePositionHandle;
@@ -30,37 +30,30 @@ public class DefaultCameraRenderer implements TextureViewGLWrapper.GLRenderer {
     private int imageWHRatioHandler = 0;
     private int camTexMatrixHandle;
     private int mvpMatrixHandle;
-private int captureImageHandler;
+    private int captureImageHandler;
     private int imageType = 1;
-    float imageRatio;
     private Matrix4f cameraTextureMatrix = new Matrix4f();
     private Matrix4f mvpMatrix = new Matrix4f();
-
     private int surfaceWidth;
     private int surfaceHeight;
-
     private int originY = 0;
-
-
     private boolean shouldCaptureImage = false;
-
-    ImageCaptureInterface imageCaptureInterface;
-
-    boolean captureImage(){
-        if(shouldCaptureImage) return false;
-        this.shouldCaptureImage = true;
-        return true;
-    }
-
 
     DefaultCameraRenderer(Context context) {
         this.context = context;
         this.imageCaptureInterface = (ImageCaptureInterface) context;
     }
 
-    void changeImageType(boolean isProfilePicture){
+    boolean captureImage() {
+        if (shouldCaptureImage) return false;
+        this.shouldCaptureImage = true;
+        return true;
+    }
+
+    void changeImageType(boolean isProfilePicture) {
         this.imageType = isProfilePicture ? 0 : 1;
     }
+
     @Override
     public void onSurfaceCreated(SurfaceTexture eglSurfaceTexture, int surfaceWidth, int surfaceHeight) {
 
@@ -189,8 +182,23 @@ private int captureImageHandler;
         GLES20.glUniformMatrix4fv(mvpMatrixHandle, 1, false, mvpMatrix.getArray(), 0);
         //And draw
         GLES20.glDrawElements(GLES20.GL_TRIANGLES, drawOrderBuffer.remaining(), GLES20.GL_UNSIGNED_SHORT, drawOrderBuffer);
-        if(this.shouldCaptureImage){
-            Bitmap bitmap = OpenGLTools.saveTexture( this.surfaceWidth, this.surfaceWidth, 20, originY);
+        if (this.shouldCaptureImage) {
+            int originX = 20; //1 - 0.45 * 2
+            int orgY = originY;
+            int imageDimension =  this.surfaceWidth  ;
+            final int discard = (int) (this.surfaceHeight  * 0.25);
+            Bitmap bitmap;
+            if (this.imageType == 0) {
+                imageDimension = (int) (this.surfaceWidth * 0.45 * 2);
+                originX = (int) ((this.surfaceWidth - imageDimension) / 2) + 20;
+                orgY = (int) ((int) ((this.surfaceHeight - imageDimension / imageRatio) / 2) + 40);
+                bitmap = OpenGLTools.saveTexture(imageDimension, imageDimension+85, originX, orgY);
+            } else {
+                bitmap = OpenGLTools.saveTexture(imageDimension,
+                        (int) (this.surfaceHeight -  discard * 2),
+                        originX, (int) (orgY + discard)) ;
+            }
+
             this.imageCaptureInterface.onImageCapture(bitmap);
             this.shouldCaptureImage = false;
         }

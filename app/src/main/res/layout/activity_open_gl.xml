@@ -13,9 +13,12 @@
         tools:context="com.psl.openglandroid.OpenGLActivity">
 
     </TextureView>
-    <ImageView android:layout_height="match_parent"
+
+    <ImageView
+        android:id="@+id/previewImage"
         android:layout_width="match_parent"
-        android:id="@+id/previewImage">
+        android:layout_height="match_parent"
+        >
 
     </ImageView>
     <LinearLayout
